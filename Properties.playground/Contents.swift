@@ -42,10 +42,17 @@ struct LocationTrack {
     var locations: [CLLocation]
     
     var length: CLLocationDistance {
-        // this function should sum up all the distances between the locations in the track
-        return 1000.0 // right now it just returns 1000 (in meters, which is one kilometer).
+        if locations.count <= 1 {
+            return 0.0
+        }
+        else {
+            var maxDist: Double = 0
+            for i in 0 ..< (locations.count-1) {
+                maxDist += locations[i].distanceFromLocation(locations[i+1])
+            }
+            return maxDist
+        }
     }
-    
 }
 
 
@@ -66,7 +73,22 @@ class LocationTrackTestSuite: XCTestCase {
         XCTAssertEqual(expectedResult, onePointTrack.length, "Single point track should have zero length.")
     }
     
-    
+    func test2dDistance() {
+        let oakland = CLLocation(latitude: 37.8044, longitude: 122.2711)
+        let sf = CLLocation(latitude: 37.7749, longitude: 122.4194)
+        let moraga = CLLocation(latitude: 37.8349, longitude: 122.1297)
+        let threePointTrack = LocationTrack(locations: [sf, oakland, moraga])
+        var estCheck = false
+        
+        if threePointTrack.length > 15000 && threePointTrack.length < 30000 {
+            estCheck = true
+        } else {
+            estCheck = false
+        }
+        
+        let expectedResult = estCheck
+        XCTAssertEqual(expectedResult, true, "SF to Moraga should be between 15km and 30km")
+    }
 }
 /*:
  The last bit of arcana is necessary to support the execution of unit tests in a playground, but isn't documented in [Apple's XCTest Library]( https://github.com/apple/swift-corelibs-xctest ). I gratefully acknowledge Stuart Sharpe for sharing it in his blog post, [TDD in Swift Playgrounds]( http://initwithstyle.net/2015/11/tdd-in-swift-playgrounds/ ). */
